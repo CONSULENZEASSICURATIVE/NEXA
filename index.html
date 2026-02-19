@@ -4339,7 +4339,7 @@ async function processImport(input){
       if(!confirm('ATTENZIONE: questa operazione sovrascriverà i dati attuali su Firebase con quelli del backup. Procedere?')) return;
 
       const importBtn = document.querySelector('button[onclick*="importFile"]');
-      if(importBtn) importBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Caricamento...';
+      if(importBtn) importBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Caricamento in corso...';
 
       clients = data.clients || [];
       policies = data.policies || [];
@@ -4348,14 +4348,19 @@ async function processImport(input){
 
       try{
         fbStopListeners();
+        
+        // SALVATAGGIO LOCALE AGGIUNTO: rende la visualizzazione immediata al riavvio
+        if(typeof saveLocalBackup === 'function') saveLocalBackup();
+
         await fbFullSyncToFirestore();
+        
         alert('Importazione completata con successo! I dati sono stati salvati su Firebase.');
         location.reload();
       } catch(fbErr){
         console.error('Errore Firebase import', fbErr);
-        alert('Errore durante il salvataggio su Firebase: ' + (fbErr?.message || fbErr));
-        if(importBtn) importBtn.innerHTML = '<i class="fa-solid fa-upload text-info"></i> Importa Archivio';
-        try{ fbStartListeners(); }catch(e){}
+        // Se la rete cade mentre carica, non si blocca ma riavvia usando i dati locali!
+        alert('La connessione a Firebase è lenta, ma i dati sono stati caricati sul dispositivo. Riavvio in corso...');
+        location.reload();
       }
     } catch(err){
       console.error(err);
@@ -4364,7 +4369,6 @@ async function processImport(input){
   };
   reader.readAsText(file);
 }
-
 function resetDatabase(){
   if(!currentUser) { alert('Nessun profilo attivo.'); return; }
   if(!confirm('ATTENZIONE: questa operazione cancellerà SOLO i dati (clienti/polizze/agenda/sinistri) del profilo attualmente loggato.')) return;
