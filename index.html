@@ -4338,7 +4338,7 @@ async function processImport(input){
       const data = JSON.parse(e.target.result);
       if(!confirm('ATTENZIONE: questa operazione sovrascriverà i dati attuali su Firebase con quelli del backup. Procedere?')) return;
 
-      const importBtn = document.querySelector('button[onclick="document.getElementById(\"importFile\").click()"]');
+      const importBtn = document.querySelector('button[onclick*="importFile"]');
       if(importBtn) importBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Caricamento...';
 
       clients = data.clients || [];
